@@ -23,11 +23,12 @@ KenuCord, Electron ve Next.js kullanılarak geliştirilmiş bir mesajlaşma uygu
 - [x] Tema değiştirme özelliği (açık/koyu tema)
 - [x] Kullanıcı arayüzü (UI) tasarımı (Chakra UI ile)
 - [x] Ayarları kaydetme ve yükleme
-- [x] Bildirim sistemi //Desktop Notification atcak. Bildirim Testi silincek.
+- [x] Bildirim sistemi
+- [x] Profil fotoğrafı güncellemesi
 
 
 ## Yapılacaklar
-- [ ] Okundu bilgisi ve yazıyor göstergesi
+- [ ] Yazıyor göstergesi
 - [ ] Sesli ve görüntülü arama entegrasyonu
 - [ ] Mesaj düzenleme ve silme özellikleri
 - [ ] Emoji ve GIF desteği
@@ -36,7 +37,6 @@ KenuCord, Electron ve Next.js kullanılarak geliştirilmiş bir mesajlaşma uygu
 - [ ] Yazı tipi ve boyutu ayarları
 - [ ] Güvenlik iyileştirmeleri (end-to-end şifreleme)
 - [ ] Otomatik güncelleme sistemi
-- [ ] Profil fotoğrafı güncellemesi
 
 ## Teknik Borç
 - [x] Mesaj işleme mantığının iyileştirilmesi
