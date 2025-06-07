@@ -1,0 +1,52 @@
+{
+    "name": "kenucord",
+    "version": "1.0.0",
+    "description": "KenuCord Mesajlaşma Uygulaması",
+    "main": "main.js",
+    "scripts": {
+        "dev": "concurrently \"npm run dev:next\" \"npm run dev:electron\"",
+        "dev:next": "cd renderer && next dev",
+        "dev:electron": "electron .",
+        "build": "cd renderer && next build && next export",
+        "start": "electron .",
+        "package": "electron-builder",
+        "postinstall": "electron-builder install-app-deps"
+    },
+    "build": {
+        "appId": "com.kenucord.app",
+        "productName": "KenuCord v1.0.0",
+        "files": [
+            "main.js",
+            "preload.js",
+            "renderer/out/**"
+        ],
+        "win": {
+            "target": [
+                "nsis"
+            ],
+            "icon": "renderer/public/icon.ico"
+        },
+        "mac": {
+            "target": [
+                "dmg"
+            ],
+            "icon": "renderer/public/icon.icns"
+        },
+        "linux": {
+            "target": [
+                "AppImage"
+            ],
+            "icon": "renderer/public/icon.png"
+        }
+    },
+    "dependencies": {
+        "electron-is-dev": "^2.0.0",
+        "electron-store": "^10.0.1"
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2",
+        "electron": "^28.1.0",
+        "electron-builder": "^24.9.1",
+        "wait-on": "^7.2.0"
+    }
+}
