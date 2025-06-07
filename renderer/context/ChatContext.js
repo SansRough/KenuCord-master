@@ -41,6 +41,20 @@ export function ChatProvider({ children }) {
   // Yazıyor durumunu bildirme
   const sendTypingStatus = async (isTyping) => {
     try {
+      // Bağlantı kontrolü
+      if (!isConnected) {
+        console.warn("Bağlantı yok, yazıyor durumu gönderilemiyor");
+        return;
+      }
+      
+      // Geçerli oda kontrolü
+      if (!currentRoom) {
+        console.warn("Geçerli oda bulunamadı, yazıyor durumu gönderilemiyor");
+        return;
+      }
+      
+      console.log(`Yazıyor durumu gönderiliyor: ${isTyping ? "yazıyor" : "yazmayı bıraktı"}, Oda: ${currentRoom}`);
+      
       const messageObj = {
         type: "typing_status",
         is_typing: isTyping,
@@ -54,6 +68,8 @@ export function ChatProvider({ children }) {
       setIsTyping(isTyping);
     } catch (error) {
       console.error("Yazıyor durumu bildirme hatası:", error);
+      // Hata durumunda isTyping durumunu false olarak ayarla
+      setIsTyping(false);
     }
   };
   
@@ -492,6 +508,18 @@ export function ChatProvider({ children }) {
       // Sunucu tarafından bir hata gelmezse, bu işlem başarılı olmuş demektir
       setCurrentRoom(room);
       setMessages([]);
+      
+      // Oda değiştirildiğinde typing users listesini temizle
+      setTypingUsers({});
+      
+      // Eğer kullanıcı yazıyorsa, yazma durumunu iptal et
+      if (isTyping) {
+        setIsTyping(false);
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = null;
+        }
+      }
     } catch (error) {
       console.error("Oda değiştirme hatası:", error);
     }
@@ -890,6 +918,19 @@ export function ChatProvider({ children }) {
         if (message.room && typeof message.room === "string") {
           setCurrentRoom(message.room);
           setMessages([]); // Oda değişince mesaj geçmişini temizle
+          
+          // Oda değiştirildiğinde typing users listesini temizle
+          setTypingUsers({});
+          
+          // Eğer kullanıcı yazıyorsa, yazma durumunu iptal et
+          if (isTyping) {
+            setIsTyping(false);
+            if (typingTimeoutRef.current) {
+              clearTimeout(typingTimeoutRef.current);
+              typingTimeoutRef.current = null;
+            }
+          }
+          
           showInfoToast(
             "Oda Değiştirildi",
             `"${message.room}" odasına geçiş yapıldı.`,

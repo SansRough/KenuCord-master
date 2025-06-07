@@ -87,7 +87,14 @@ export default function ChatArea({ toggleTheme, isDark }) {
   // Mesaj yazarken typing durumunu bildirme
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
+    
+    // Mesaj içeriği dolu ise yazıyor durumunu bildir
     if (e.target.value.trim()) {
+      handleTyping();
+    } 
+    // Mesaj tamamen boş ise ve kullanıcı yazıyorsa, yazma durumunu iptal et
+    else if (e.target.value === "" && message.trim() !== "") {
+      // sendTypingStatus otomatik olarak timeout'u temizleyecek
       handleTyping();
     }
   };
