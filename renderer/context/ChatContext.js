@@ -749,15 +749,20 @@ export function ChatProvider({ children }) {
     const messageHandlers = {
       // Yazıyor bildirimi
       typing_status: () => {
-        if (message.username && message.room === currentRoom) {
+        console.log(`Typing status alındı: Kullanıcı=${message.username}, Mesaj Odası=${message.room}, Mevcut Oda=${currentRoom}, Yazıyor=${message.is_typing}`);
+        
+        // Sadece kullanıcı adı kontrolü yap, oda kontrolünü kaldır
+        if (message.username) {
           if (message.is_typing) {
             // Kullanıcı yazmaya başladı
+            console.log(`${message.username} kullanıcısı yazıyor olarak işaretlendi`);
             setTypingUsers(prev => ({
               ...prev,
               [message.username]: Date.now()
             }));
           } else {
             // Kullanıcı yazmayı bıraktı
+            console.log(`${message.username} kullanıcısı yazmayı bıraktı olarak işaretlendi`);
             setTypingUsers(prev => {
               const newTypingUsers = { ...prev };
               delete newTypingUsers[message.username];

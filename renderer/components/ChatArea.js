@@ -198,6 +198,8 @@ export default function ChatArea({ toggleTheme, isDark }) {
   const getTypingUsersText = () => {
     const typingUsernames = Object.keys(typingUsers);
     
+    console.log(`getTypingUsersText çağrıldı: Şu anki oda: ${currentRoom}, Yazanlar:`, typingUsers);
+    
     if (typingUsernames.length === 0) {
       return null;
     } else if (typingUsernames.length === 1) {
@@ -208,6 +210,11 @@ export default function ChatArea({ toggleTheme, isDark }) {
       return `${typingUsernames.length} kişi yazıyor...`;
     }
   };
+  
+  // typingUsers değiştiğinde debug log
+  useEffect(() => {
+    console.log("typingUsers değişti:", typingUsers);
+  }, [typingUsers]);
 
   return (
     <Flex direction="column" h="100%" overflow="hidden">
@@ -352,7 +359,7 @@ export default function ChatArea({ toggleTheme, isDark }) {
               </Button>
             </Flex>
             
-            {getTypingUsersText() && (
+            {Object.keys(typingUsers).length > 0 && (
               <Text 
                 fontSize="xs" 
                 color="gray.500" 
@@ -365,7 +372,7 @@ export default function ChatArea({ toggleTheme, isDark }) {
                   }
                 }}
               >
-                {getTypingUsersText()}
+                {getTypingUsersText() || "Birisi yazıyor..."}
               </Text>
             )}
           </Flex>
