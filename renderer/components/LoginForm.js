@@ -36,7 +36,7 @@ export default function LoginForm() {
   const { isDark, toggleTheme } = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [host, setHost] = useState('localhost');
+  const [host, setHost] = useState('0.0.0.0');
   const [port, setPort] = useState('3169');
   const [isLoading, setIsLoading] = useState(false);
   const { connect } = useChatContext();
