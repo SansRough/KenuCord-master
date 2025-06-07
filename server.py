@@ -387,6 +387,23 @@ def handle_client(client_socket, addr):
                     with lock:
                         public_rooms = [name for name, info in rooms.items() if info["type"] == "public"]
                         client_socket.send(json.dumps({"type": "room_list", "rooms": public_rooms}).encode())
+                
+                # ==== Yazıyor Göstergesi ====
+                elif data["type"] == "typing_status":
+                    room = users[client_socket].room
+                    is_typing = data.get("is_typing", False)
+                    print(f"[*] Typing status: User={username}, Room={room}, Is typing={is_typing}")
+                    
+                    # Tüm odadaki kullanıcılara yazıyor durumunu bildir
+                    typing_data = {
+                        "type": "typing_status",
+                        "username": username,
+                        "room": room,
+                        "is_typing": is_typing
+                    }
+                    
+                    # Kendisi hariç odadaki herkese gönder
+                    broadcast(room, typing_data, exclude=client_socket)
 
                 # ==== Bildirim İşlemleri ====
                 elif data["type"] == "mark_as_read":

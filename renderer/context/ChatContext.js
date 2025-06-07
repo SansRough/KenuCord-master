@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useState, useEffect } from "react";
+﻿import { createContext, useContext, useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
@@ -30,8 +30,50 @@ export function ChatProvider({ children }) {
   // Rahatsız Etme modu için state
   const [doNotDisturb, setDoNotDisturb] = useState(false);
   const [doNotDisturbUntil, setDoNotDisturbUntil] = useState(null);
+  
+  // Yazıyor göstergesi için state
+  const [typingUsers, setTypingUsers] = useState({});
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
 
   const toast = useToast();
+
+  // Yazıyor durumunu bildirme
+  const sendTypingStatus = async (isTyping) => {
+    try {
+      const messageObj = {
+        type: "typing_status",
+        is_typing: isTyping,
+        room: currentRoom
+      };
+
+      await window.chatAPI.sendMessage(
+        JSON.stringify(messageObj)
+      );
+      
+      setIsTyping(isTyping);
+    } catch (error) {
+      console.error("Yazıyor durumu bildirme hatası:", error);
+    }
+  };
+  
+  // Kullanıcı yazarken sendTypingStatus'u çağırmak için kullanılacak fonksiyon
+  const handleTyping = () => {
+    // Kullanıcı yazıyorsa ve daha önce typing durumu gönderilmemişse
+    if (!isTyping) {
+      sendTypingStatus(true);
+    }
+    
+    // Varolan timeout'u temizle
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Kullanıcı 3 saniye yazmayı bıraktığında typing durumunu false yap
+    typingTimeoutRef.current = setTimeout(() => {
+      sendTypingStatus(false);
+    }, 3000);
+  };
 
   // Rahatsız Etme modunu açıp kapatma fonksiyonu
   const toggleDoNotDisturb = () => {
@@ -412,6 +454,15 @@ export function ChatProvider({ children }) {
       if (!response.success) {
         throw new Error(response.error || "Mesaj gönderilemedi");
       }
+      
+      // Mesaj gönderildikten sonra yazıyor durumunu temizle
+      if (isTyping) {
+        sendTypingStatus(false);
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = null;
+        }
+      }
     } catch (error) {
       console.error("Mesaj gönderme hatası:", error);
     }
@@ -668,6 +719,26 @@ export function ChatProvider({ children }) {
 
     // Mesaj işleyici fonksiyonları - Kod tekrarını azaltmak için
     const messageHandlers = {
+      // Yazıyor bildirimi
+      typing_status: () => {
+        if (message.username && message.room === currentRoom) {
+          if (message.is_typing) {
+            // Kullanıcı yazmaya başladı
+            setTypingUsers(prev => ({
+              ...prev,
+              [message.username]: Date.now()
+            }));
+          } else {
+            // Kullanıcı yazmayı bıraktı
+            setTypingUsers(prev => {
+              const newTypingUsers = { ...prev };
+              delete newTypingUsers[message.username];
+              return newTypingUsers;
+            });
+          }
+        }
+      },
+      
       // Sohbet mesajı
       message: () => {
         setMessages((prev) => [...prev, message]);
@@ -679,6 +750,15 @@ export function ChatProvider({ children }) {
         // Eğer sender belirtilmemişse, mesaj formatından çıkar (username: content)
         if (!senderUsername && messageText.includes(":")) {
           senderUsername = messageText.split(":")[0].trim();
+        }
+        
+        // Mesaj gönderildiğinde, o kullanıcının typing durumunu temizle
+        if (senderUsername) {
+          setTypingUsers(prev => {
+            const newTypingUsers = { ...prev };
+            delete newTypingUsers[senderUsername];
+            return newTypingUsers;
+          });
         }
         
         console.log("Mesaj alındı:", {
@@ -1274,6 +1354,10 @@ export function ChatProvider({ children }) {
         doNotDisturbUntil,
         toggleDoNotDisturb,
         enableDoNotDisturbFor,
+        
+        // Yazıyor göstergesi
+        typingUsers,
+        handleTyping
       }}
     >
       {children}

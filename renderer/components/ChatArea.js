@@ -35,9 +35,23 @@ const slideIn = keyframes`
   to { transform: translateX(0); opacity: 1; }
 `;
 
+// Yazıyor göstergesi için dots animasyonu
+const typingDots = keyframes`
+  0%, 20% { content: "."; }
+  40% { content: ".."; }
+  60% { content: "..."; }
+  80%, 100% { content: ""; }
+`;
+
 export default function ChatArea({ toggleTheme, isDark }) {
   const [message, setMessage] = useState('');
-  const { messages, currentRoom, sendMessage } = useChatContext();
+  const { 
+    messages, 
+    currentRoom, 
+    sendMessage, 
+    typingUsers, 
+    handleTyping 
+  } = useChatContext();
   const messagesEndRef = useRef(null);
   const [profileTimestamps, setProfileTimestamps] = useState({});
   
@@ -67,6 +81,14 @@ export default function ChatArea({ toggleTheme, isDark }) {
     if (message.trim()) {
       sendMessage(message);
       setMessage('');
+    }
+  };
+  
+  // Mesaj yazarken typing durumunu bildirme
+  const handleMessageChange = (e) => {
+    setMessage(e.target.value);
+    if (e.target.value.trim()) {
+      handleTyping();
     }
   };
 
@@ -164,6 +186,21 @@ export default function ChatArea({ toggleTheme, isDark }) {
   useEffect(() => {
     isFirstRender.current = false;
   }, []);
+  
+  // Yazıyor olan kullanıcıları göster
+  const getTypingUsersText = () => {
+    const typingUsernames = Object.keys(typingUsers);
+    
+    if (typingUsernames.length === 0) {
+      return null;
+    } else if (typingUsernames.length === 1) {
+      return `${typingUsernames[0]} yazıyor...`;
+    } else if (typingUsernames.length === 2) {
+      return `${typingUsernames[0]} ve ${typingUsernames[1]} yazıyor...`;
+    } else {
+      return `${typingUsernames.length} kişi yazıyor...`;
+    }
+  };
 
   return (
     <Flex direction="column" h="100%" overflow="hidden">
@@ -295,16 +332,35 @@ export default function ChatArea({ toggleTheme, isDark }) {
       
       <Box p={4} bg="bg-chat" borderTop="1px" borderColor="border-color">
         <form onSubmit={handleSendMessage}>
-          <Flex>
-            <Input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Mesajınızı yazın..."
-              mr={2}
-            />
-            <Button colorScheme="blue" type="submit">
-              Gönder
-            </Button>
+          <Flex direction="column">
+            <Flex>
+              <Input
+                value={message}
+                onChange={handleMessageChange}
+                placeholder="Mesajınızı yazın..."
+                mr={2}
+              />
+              <Button colorScheme="blue" type="submit">
+                Gönder
+              </Button>
+            </Flex>
+            
+            {getTypingUsersText() && (
+              <Text 
+                fontSize="xs" 
+                color="gray.500" 
+                mt={1} 
+                fontStyle="italic"
+                sx={{
+                  '&::after': {
+                    content: '""',
+                    animation: `${typingDots} 1.5s infinite`,
+                  }
+                }}
+              >
+                {getTypingUsersText()}
+              </Text>
+            )}
           </Flex>
         </form>
       </Box>
